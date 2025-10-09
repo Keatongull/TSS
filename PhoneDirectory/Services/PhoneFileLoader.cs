@@ -16,7 +16,7 @@ namespace PhoneDirectory
             usedNames = new HashSet<string>();
         }
 
-        public List<PhoneEntry> LoadPhoneEntries(string fileName, int maxEntries)
+        public List<PhoneEntry>? LoadPhoneEntries(string fileName, int maxEntries)
         {
             // Check if file exists
             if (!File.Exists(fileName))
@@ -50,7 +50,7 @@ namespace PhoneDirectory
                     }
 
                     // Process the line
-                    PhoneEntry entry = ProcessLine(line, lineNumber);
+                    PhoneEntry? entry = ProcessLine(line, lineNumber);
                     if (entry != null)
                     {
                         entries.Add(entry);
@@ -74,7 +74,7 @@ namespace PhoneDirectory
             return entries;
         }
 
-        private PhoneEntry ProcessLine(string line, int lineNumber)
+        private PhoneEntry? ProcessLine(string line, int lineNumber)
         {
             // Skip empty lines and comments
             if (IsEmptyOrComment(line))
