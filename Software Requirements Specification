@@ -1,0 +1,218 @@
+CS 4230 Project 1 – Software Requirements Specification
+Telephone Switching Simulation (TSS)
+
+===============================================================================
+1. STARTUP AND FILE HANDLING
+===============================================================================
+
+1.1 Input File Requirements:
+    - [ENHANCEMENT] Program reads from "phones.txt" in the current directory.
+    - [ENHANCEMENT] If the file does not exist, display:
+        "Error: phones.txt not found" and exit.
+    - File contains up to 20 phone/name pairs, one per line.
+    - Format: "NNNNN Name" (5-digit number, space, name)
+    - [CLARIFICATION] If file has more than 20 entries, only load the first 20.
+      Print: "Warning: additional lines skipped."
+    - [ENHANCEMENT] Empty lines and lines starting with '#' are ignored (comments).
+    - [ENHANCEMENT] Upon successful read, display:
+        "Successfully loaded X phone entries."
+
+1.2 Data Validation:
+    - Phone numbers: exactly 5 digits (0–9), may start with 0.
+    - Names: 1–12 alphabetic characters (A–Z, a–z).
+    - [ENHANCEMENT] Duplicate phone numbers:
+        print "Warning: duplicate phone number on line X, using first occurrence."
+    - [ENHANCEMENT] Duplicate names:
+        print "Warning: duplicate name on line X, using first occurrence."
+    - [ENHANCEMENT] Invalid lines:
+        print "Warning: invalid format on line X, skipping."
+    - [ENHANCEMENT] Lines with incorrect input count:
+        print "Unable to read line X: '{content}' – reason: incorrect number of fields."
+    - [ENHANCEMENT] If no valid entries are loaded:
+        print "Error: No valid phone entries found" and exit.
+
+===============================================================================
+2. COMMAND PROCESSING
+===============================================================================
+
+2.1 Command Format:
+    - [ENHANCEMENT] Commands are case-insensitive.
+    - [ENHANCEMENT] Leading/trailing whitespace is ignored.
+    - [ENHANCEMENT] Commands accept either a 5-digit phone number OR name
+      as the phone identifier (case-insensitive for names).
+    - [ENHANCEMENT] Commands must be entered one per line.
+    - [ENHANCEMENT] Maximum command length: 50 characters.
+    - [ENHANCEMENT] Available commands:
+        1. offhook
+        2. onhook
+        3. call <target>
+        4. transfer <target>
+        5. conference <target>
+        6. status
+        7. help
+        8. quit / exit
+      (User can type command name or corresponding number.)
+
+2.2 Command Validation:
+    - [ENHANCEMENT] Unknown commands: print "Invalid command."
+    - [ENHANCEMENT] Malformed syntax: print "Invalid command syntax."
+    - [ENHANCEMENT] Commands referencing unknown phones: result in "denial."
+    - [ENHANCEMENT] Commands on ONHOOK phones (other than offhook): result in "silence."
+
+===============================================================================
+3. PHONE STATES AND TRANSITIONS
+===============================================================================
+
+3.1 States:
+    - [ENHANCEMENT] IDLE (ONHOOK): phone is hung up.
+    - [ENHANCEMENT] OFFHOOK_DIALTONE: phone lifted, hearing dialtone.
+    - [ENHANCEMENT] CALLING: phone has dialed, hearing ringback.
+    - [ENHANCEMENT] RINGING: phone is receiving an incoming call.
+    - [ENHANCEMENT] TALKING_2WAY: two phones connected.
+    - [ENHANCEMENT] TALKING_3WAY: three phones in a conference.
+    - [ENHANCEMENT] TRANSFERRING: phone is transferring a call.
+    - [ENHANCEMENT] CONFERENCING: phone is setting up a conference.
+
+3.2 Transition Rules:
+    - ONHOOK → OFFHOOK_DIALTONE: via “offhook.”
+    - OFFHOOK_DIALTONE → CALLING: via “call.”
+    - CALLING → TALKING_2WAY: when target answers.
+    - TALKING_2WAY → TALKING_3WAY: via “conference.”
+    - [ENHANCEMENT] Repeated offhook while already offhook:
+        print "<Name> is already offhook."
+    - [ENHANCEMENT] Repeated onhook while already onhook:
+        print "<Name> is already onhook."
+    - [ENHANCEMENT] Illegal transitions produce “denial.”
+
+===============================================================================
+4. CALL MANAGEMENT
+===============================================================================
+
+4.1 Basic Call Rules:
+    - Maximum 3 phones per call.
+    - [ENHANCEMENT] A phone can only participate in one call at a time.
+    - Calling a busy phone → “busy.”
+    - Calling non-existent phone → “denial.”
+    - Calling while ONHOOK → “silence.”
+    - [ENHANCEMENT] Self-call attempts → “denial.”
+
+4.2 Termination:
+    - [CLARIFICATION] When a phone goes onhook, it leaves the call.
+    - If 2 remain, call continues.
+    - If 1 remains, that phone hears “silence.”
+
+===============================================================================
+5. CONFERENCE AND TRANSFER
+===============================================================================
+
+5.1 Conference Rules:
+    - [CLARIFICATION] Only phones in a 2-way call may initiate.
+    - [ENHANCEMENT] Target must be ONHOOK.
+    - Initiator hears “ringback,” target hears “ringing.”
+    - If target answers, all three talk.
+    - If target does not answer, conference fails.
+    - [ENHANCEMENT] Only one 3-way call active at a time.
+    - [ENHANCEMENT] Attempting to add someone already in the call:
+        print "<Name> is already part of that call."
+
+5.2 Transfer Rules:
+    - [CLARIFICATION] Only phones in 2-way calls may initiate transfer.
+    - [ENHANCEMENT] Target must be ONHOOK.
+    - Transferring phone leaves call immediately (hears “silence”).
+    - If target does not answer, original call resumes.
+    - [ENHANCEMENT] Cannot transfer to someone already in the same call.
+
+===============================================================================
+6. STATUS OUTPUT
+===============================================================================
+
+6.1 Format:
+    [ENHANCEMENT] System Status:
+    -------------
+    Phone: State [Call Info]
+
+    Example:
+        12345 (Alice): ONHOOK
+        23456 (Bob): TALKING_2WAY with 34567 (Carol)
+        34567 (Carol): TALKING_3WAY with 12345 (Alice), 23456 (Bob)
+
+6.2 Call Summary:
+    [ENHANCEMENT] Active Calls: X
+        - Call 1: Alice <-> Bob
+        - Call 2: Carol <-> Dave <-> Eve
+
+===============================================================================
+7. ERROR HANDLING AND EDGE CASES
+===============================================================================
+
+7.1 Responses:
+    - denial: invalid phone reference, self-call, illegal operation
+    - busy: called phone in use
+    - silence: command attempted while ONHOOK
+    - no response: repeated offhook, ignored commands
+
+7.2 Limits:
+    - [ENHANCEMENT] Max 10 simultaneous calls.
+    - [ENHANCEMENT] Max 1 three-way call at a time.
+    - [ENHANCEMENT] Commands longer than 50 chars truncated.
+
+===============================================================================
+8. IMPLEMENTATION AND LOGGING
+===============================================================================
+
+8.1 Data Structures:
+    - Phone directory: map phone → name
+    - State map: track each phone’s state
+    - Active call list: current conversations
+
+8.2 Logging (Optional):
+    - [ENHANCEMENT] Log all commands/responses to "tss_log.txt"
+    - Include timestamp for debugging
+
+8.3 Termination:
+    - [ENHANCEMENT] “quit” or “exit” ends program gracefully.
+    - [ENHANCEMENT] Ctrl+C handled gracefully if possible.
+    - [ENHANCEMENT] Display total commands processed before exit.
+
+===============================================================================
+9. TESTING REQUIREMENTS
+===============================================================================
+
+    - Test all valid, invalid, and boundary cases:
+        - Exactly 20 phones loaded
+        - Names with 1 and 12 characters
+        - Phone number “00000”
+        - Duplicate detection
+        - Invalid format lines
+        - Self-call prevention
+        - Transfer to inactive/active phones
+        - Conference with busy or duplicate participants
+
+===============================================================================
+10. SAMPLE ENHANCED SCENARIOS
+===============================================================================
+
+Scenario 1: Missing File
+    Input file missing → “Error: phones.txt not found” → exit.
+
+Scenario 2: Invalid Conference
+    Alice & Bob talking; Alice tries to conference Carol (busy).
+    Output: “Alice hears denial.”
+
+Scenario 3: Transfer With No Answer
+    Alice transfers Bob to Carol, Carol never offhooks.
+    Output: “Transfer failed – original call resumed.”
+
+Scenario 4: Self-Call
+    Alice calls Alice → “Alice hears denial.”
+
+Scenario 5: Complex Status
+    Output:
+        System Status:
+        -------------
+        12345 (Alice): TALKING_3WAY with 23456 (Bob), 34567 (Carol)
+        23456 (Bob): TALKING_3WAY with 12345 (Alice), 34567 (Carol)
+        34567 (Carol): TALKING_3WAY with 12345 (Alice), 23456 (Bob)
+
+        Active Calls: 1
+        - Call 1: Alice <-> Bob <-> Carol
