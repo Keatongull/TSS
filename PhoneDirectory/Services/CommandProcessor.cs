@@ -112,6 +112,10 @@ namespace PhoneDirectory
             Console.WriteLine($"{caller.Name} is now in a call with {target.Name}.");
         }
 
+        // TODO: HandleTransfer
+        public void HandleTransfer(string identifier)
+        {}
+
         public void HandleConference(string identifier)
         {
             // Find who’s requesting conference
