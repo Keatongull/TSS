@@ -1,10 +1,8 @@
 using System;
+using System.Linq;
 
 namespace PhoneDirectory
 {
-    /// <summary>
-    /// Processes and handles all telephone system commands
-    /// </summary>
     public class CommandProcessor
     {
         private readonly PhoneSystem phoneSystem;
@@ -14,9 +12,6 @@ namespace PhoneDirectory
             this.phoneSystem = phoneSystem;
         }
 
-        /// <summary>
-        /// Handle the offhook command
-        /// </summary>
         public void HandleOffhook(string identifier)
         {
             var entry = phoneSystem.FindEntry(identifier);
@@ -25,21 +20,18 @@ namespace PhoneDirectory
                 Console.WriteLine("denial");
                 return;
             }
-            
+
             var state = phoneSystem.GetPhoneState(entry.PhoneNumber);
             if (state != PhoneState.ONHOOK)
             {
                 Console.WriteLine($"{entry.Name} is already offhook.");
                 return;
             }
-            
+
             phoneSystem.SetPhoneState(entry.PhoneNumber, PhoneState.OFFHOOK_DIALTONE);
             Console.WriteLine($"{entry.Name} is now offhook (dialtone).");
         }
 
-        /// <summary>
-        /// Handle the onhook command
-        /// </summary>
         public void HandleOnhook(string identifier)
         {
             var entry = phoneSystem.FindEntry(identifier);
@@ -48,68 +40,131 @@ namespace PhoneDirectory
                 Console.WriteLine("denial");
                 return;
             }
-            
+
+            // If phone is in a call, leave that call
+            if (phoneSystem.IsPhoneInCall(entry.PhoneNumber))
+            {
+                Console.WriteLine($"{entry.Name} hung up.");
+                phoneSystem.LeaveCall(entry.PhoneNumber);
+                return;
+            }
+
             var state = phoneSystem.GetPhoneState(entry.PhoneNumber);
             if (state == PhoneState.ONHOOK)
             {
                 Console.WriteLine($"{entry.Name} is already onhook.");
                 return;
             }
-            
+
             phoneSystem.SetPhoneState(entry.PhoneNumber, PhoneState.ONHOOK);
             Console.WriteLine($"{entry.Name} is now onhook.");
         }
 
-        /// <summary>
-        /// Handle the call command (placeholder for steps 1-3)
-        /// </summary>
         public void HandleCall(string identifier)
         {
-            var targetEntry = phoneSystem.FindEntry(identifier);
-            if (targetEntry == null)
+            // Find the caller (someone with OFFHOOK_DIALTONE)
+            var caller = phoneSystem.PhoneBook.FirstOrDefault(p =>
+                phoneSystem.GetPhoneState(p.PhoneNumber) == PhoneState.OFFHOOK_DIALTONE);
+
+            if (caller == null)
+            {
+                Console.WriteLine("silence");
+                return;
+            }
+
+            var target = phoneSystem.FindEntry(identifier);
+            if (target == null)
             {
                 Console.WriteLine("denial");
                 return;
             }
-            
-            // For steps 1-3, we just implement basic validation
-            // Commands on ONHOOK phones (other than offhook) result in "silence"
-            // This will be fully implemented in step 4 with proper call logic
-            Console.WriteLine("silence");
+
+            // Self-call check
+            if (caller.PhoneNumber == target.PhoneNumber)
+            {
+                Console.WriteLine("denial");
+                return;
+            }
+
+            // Target busy?
+            if (phoneSystem.IsPhoneInCall(target.PhoneNumber))
+            {
+                Console.WriteLine("busy");
+                return;
+            }
+
+            // Caller busy?
+            if (phoneSystem.IsPhoneInCall(caller.PhoneNumber))
+            {
+                Console.WriteLine("busy");
+                return;
+            }
+
+            // Target ONHOOK?
+            if (phoneSystem.GetPhoneState(target.PhoneNumber) == PhoneState.ONHOOK)
+            {
+                Console.WriteLine("silence");
+                return;
+            }
+
+            // Start the call
+            phoneSystem.StartCall(caller.PhoneNumber, target.PhoneNumber);
+            Console.WriteLine($"{caller.Name} is now in a call with {target.Name}.");
         }
 
-        /// <summary>
-        /// Handle the transfer command (placeholder for steps 1-3)
-        /// </summary>
+        // TODO: HandleTransfer
         public void HandleTransfer(string identifier)
-        {
-            var targetEntry = phoneSystem.FindEntry(identifier);
-            if (targetEntry == null)
-            {
-                Console.WriteLine("denial");
-                return;
-            }
-            
-            // Commands on ONHOOK phones (other than offhook) result in "silence"
-            // This will be fully implemented in step 5 with proper transfer logic
-            Console.WriteLine("silence");
-        }
+        {}
 
-        /// <summary>
-        /// Handle the conference command (placeholder for steps 1-3)
-        /// </summary>
         public void HandleConference(string identifier)
         {
-            var targetEntry = phoneSystem.FindEntry(identifier);
-            if (targetEntry == null)
+            // Find who’s requesting conference
+            var requester = phoneSystem.PhoneBook.FirstOrDefault(p =>
+                phoneSystem.IsPhoneInCall(p.PhoneNumber));
+
+            if (requester == null)
+            {
+                Console.WriteLine("silence");
+                return;
+            }
+
+            var newParticipant = phoneSystem.FindEntry(identifier);
+            if (newParticipant == null)
             {
                 Console.WriteLine("denial");
                 return;
             }
-            
-            // Commands on ONHOOK phones (other than offhook) result in "silence"
-            // This will be fully implemented in step 5 with proper conference logic
-            Console.WriteLine("silence");
+
+            // Self-conference
+            if (requester.PhoneNumber == newParticipant.PhoneNumber)
+            {
+                Console.WriteLine("denial");
+                return;
+            }
+
+            // If new participant is already in another call
+            if (phoneSystem.IsPhoneInCall(newParticipant.PhoneNumber))
+            {
+                Console.WriteLine("busy");
+                return;
+            }
+
+            // If new participant is ONHOOK → can’t join
+            if (phoneSystem.GetPhoneState(newParticipant.PhoneNumber) == PhoneState.ONHOOK)
+            {
+                Console.WriteLine("silence");
+                return;
+            }
+
+            // Try adding them to existing call
+            if (phoneSystem.TryAddToCall(requester.PhoneNumber, newParticipant.PhoneNumber))
+            {
+                Console.WriteLine($"{newParticipant.Name} joined the conference.");
+            }
+            else
+            {
+                Console.WriteLine("busy (conference full).");
+            }
         }
     }
 }

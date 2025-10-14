@@ -1,22 +1,20 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace PhoneDirectory
 {
-    /// <summary>
-    /// Manages the telephone system state and operations
-    /// </summary>
     public class PhoneSystem
     {
         private readonly List<PhoneEntry> phoneBook;
         private readonly Dictionary<string, PhoneState> phoneStates;
+        private readonly List<HashSet<string>> activeCalls = new();
 
         public PhoneSystem(List<PhoneEntry> phoneBook)
         {
             this.phoneBook = phoneBook;
-            this.phoneStates = new Dictionary<string, PhoneState>();
-            
-            // Initialize all phones to ONHOOK state
+            phoneStates = new Dictionary<string, PhoneState>();
+
             foreach (var entry in phoneBook)
             {
                 phoneStates[entry.PhoneNumber] = PhoneState.ONHOOK;
@@ -26,18 +24,13 @@ namespace PhoneDirectory
         public List<PhoneEntry> PhoneBook => phoneBook;
         public Dictionary<string, PhoneState> PhoneStates => phoneStates;
 
-        /// <summary>
-        /// Find a phone entry by phone number or name (case-insensitive)
-        /// </summary>
         public PhoneEntry? FindEntry(string identifier)
         {
-            // Try phone number first
             foreach (var entry in phoneBook)
             {
                 if (entry.PhoneNumber == identifier)
                     return entry;
             }
-            // Try name (case-insensitive)
             foreach (var entry in phoneBook)
             {
                 if (entry.Name.Equals(identifier, StringComparison.OrdinalIgnoreCase))
@@ -46,22 +39,68 @@ namespace PhoneDirectory
             return null;
         }
 
-        /// <summary>
-        /// Get the current state of a phone
-        /// </summary>
         public PhoneState GetPhoneState(string phoneNumber)
         {
             return phoneStates.TryGetValue(phoneNumber, out var state) ? state : PhoneState.ONHOOK;
         }
 
-        /// <summary>
-        /// Set the state of a phone
-        /// </summary>
         public void SetPhoneState(string phoneNumber, PhoneState state)
         {
             if (phoneStates.ContainsKey(phoneNumber))
-            {
                 phoneStates[phoneNumber] = state;
+        }
+
+        // === Call Management ===
+        public bool IsPhoneInCall(string phoneNumber) => activeCalls.Any(c => c.Contains(phoneNumber));
+
+        public HashSet<string>? GetCallForPhone(string phoneNumber) =>
+            activeCalls.FirstOrDefault(c => c.Contains(phoneNumber));
+
+        public void StartCall(string phone1, string phone2)
+        {
+            var call = new HashSet<string> { phone1, phone2 };
+            activeCalls.Add(call);
+
+            SetPhoneState(phone1, PhoneState.TALKING_2WAY);
+            SetPhoneState(phone2, PhoneState.TALKING_2WAY);
+        }
+
+        public bool TryAddToCall(string existingPhone, string newPhone)
+        {
+            var call = GetCallForPhone(existingPhone);
+            if (call == null || call.Count >= 3)
+                return false;
+
+            call.Add(newPhone);
+            foreach (var num in call)
+                SetPhoneState(num, PhoneState.TALKING_3WAY);
+
+            return true;
+        }
+
+        public void LeaveCall(string phoneNumber)
+        {
+            var call = GetCallForPhone(phoneNumber);
+            if (call == null) return;
+
+            call.Remove(phoneNumber);
+            SetPhoneState(phoneNumber, PhoneState.ONHOOK);
+
+            if (call.Count == 1)
+            {
+                var remaining = call.First();
+                Console.WriteLine($"{FindEntry(remaining)?.Name} hears silence.");
+                activeCalls.Remove(call);
+                SetPhoneState(remaining, PhoneState.OFFHOOK_DIALTONE);
+            }
+            else if (call.Count == 2)
+            {
+                foreach (var num in call)
+                    SetPhoneState(num, PhoneState.TALKING_2WAY);
+            }
+            else if (call.Count == 0)
+            {
+                activeCalls.Remove(call);
             }
         }
     }
