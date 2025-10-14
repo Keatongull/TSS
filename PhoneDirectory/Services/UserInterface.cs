@@ -80,6 +80,21 @@ namespace PhoneDirectory
                     Console.WriteLine($"{entry.PhoneNumber} ({entry.Name}): {status}");
                 }
             }
+
+             Console.WriteLine($"\nActive Calls: {activeCalls.Count}");
+
+            int callIndex = 1;
+            foreach (var call in activeCalls)
+            {
+                // Convert to Name <-> Name <-> Name format
+                var participants = call.Select(num =>
+                {
+                    var entry = phoneSystem.FindEntry(num);
+                    return entry != null ? entry.Name : num;
+                });
+
+                Console.WriteLine($"    - Call {callIndex++}: {string.Join(" <-> ", participants)}");
+            }
         }
 
         /// <summary>
