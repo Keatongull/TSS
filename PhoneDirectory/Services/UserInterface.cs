@@ -34,10 +34,51 @@ namespace PhoneDirectory
             Console.WriteLine("\nSystem Status:");
             Console.WriteLine("-------------");
 
+            var callsField = typeof(PhoneSystem)
+                .GetField("activeCalls", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+
+            var activeCalls = callsField != null
+                ? (List<HashSet<string>>)callsField.GetValue(phoneSystem)!
+                : new List<HashSet<string>>();
+
             foreach (var entry in phoneSystem.PhoneBook)
             {
                 var state = phoneSystem.GetPhoneState(entry.PhoneNumber);
-                Console.WriteLine($"{entry.PhoneNumber} ({entry.Name}): {state}");
+
+                // Check if this phone is in any active call
+                var call = activeCalls.FirstOrDefault(c => c.Contains(entry.PhoneNumber));
+
+                if (call == null)
+                {
+                    Console.WriteLine($"{entry.PhoneNumber} ({entry.Name}): {state}");
+                }
+                else
+                {
+                    string status;
+                    if (call.Count == 2)
+                    {
+                        // Find the other participant
+                        var otherNumber = call.First(n => n != entry.PhoneNumber);
+                        var otherEntry = phoneSystem.FindEntry(otherNumber);
+                        status = $"TALKING_2WAY with {otherEntry?.PhoneNumber} ({otherEntry?.Name})";
+                    }
+                    else if (call.Count == 3)
+                    {
+                        var others = call.Where(n => n != entry.PhoneNumber)
+                                        .Select(n =>
+                                        {
+                                            var e = phoneSystem.FindEntry(n);
+                                            return $"{e?.PhoneNumber} ({e?.Name})";
+                                        });
+                        status = $"TALKING_3WAY with {string.Join(", ", others)}";
+                    }
+                    else
+                    {
+                        status = state.ToString();
+                    }
+
+                    Console.WriteLine($"{entry.PhoneNumber} ({entry.Name}): {status}");
+                }
             }
         }
 

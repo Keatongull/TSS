@@ -112,9 +112,62 @@ namespace PhoneDirectory
             Console.WriteLine($"{caller.Name} is now in a call with {target.Name}.");
         }
 
-        // TODO: HandleTransfer
         public void HandleTransfer(string identifier)
-        {}
+        {
+            // Check if target exists
+            var targetEntry = phoneSystem.FindEntry(identifier);
+            if (targetEntry == null)
+            {
+                Console.WriteLine("denial");
+                return;
+            }
+
+            // Prompt for transferer
+            Console.Write("Who is tranferring the call? ");
+            string? transfererInput = Console.ReadLine()?.Trim();
+            if (string.IsNullOrWhiteSpace(transfererInput))
+            {
+                Console.WriteLine("denial");
+                return;
+            }
+
+            // Check that transferer is in the call
+            var transfererEntry = phoneSystem.FindEntry(transfererInput);
+            if (transfererEntry == null)
+            {
+                Console.WriteLine("denial");
+                return;
+            }
+
+            // Prevent transferring call to self
+            if (transfererEntry.PhoneNumber == targetEntry.PhoneNumber)
+            {
+                Console.WriteLine("denial");
+                return;
+            }
+
+            // Ensure the call is a valid 2-way call
+            var call = phoneSystem.GetCallForPhone(transfererEntry.PhoneNumber);
+            if (call == null || call.Count != 2)
+            {
+                Console.WriteLine("denial");
+                return;
+            }
+
+            // Prevent transferring a call to someone already in the same call
+            if (call.Contains(targetEntry.PhoneNumber))
+            {
+                Console.WriteLine($"{targetEntry.Name} is already part of that call.");
+                return;
+            }
+
+            // Attempt the transfer
+            if (!phoneSystem.TryTransferCall(transfererEntry.PhoneNumber, targetEntry.PhoneNumber))
+            {
+                Console.WriteLine("denial");
+                return;
+            }
+        }
 
         public void HandleConference(string identifier)
         {
