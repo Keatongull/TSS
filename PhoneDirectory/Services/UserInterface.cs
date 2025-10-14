@@ -27,14 +27,34 @@ namespace PhoneDirectory
         /// <summary>
         /// Display the current system status showing all phones and their states
         /// </summary>
-        public static void PrintStatus(PhoneSystem phoneSystem)
+        public static void PrintStatus(PhoneSystem phoneSystem, CallManager? callManager = null)
         {
             Console.WriteLine("System Status:");
             Console.WriteLine("-------------");
             foreach (var entry in phoneSystem.PhoneBook)
             {
                 var state = phoneSystem.GetPhoneState(entry.PhoneNumber);
-                Console.WriteLine($"{entry.PhoneNumber} ({entry.Name}): {state}");
+                string callInfo = callManager?.GetCallInfo(entry) ?? "";
+                Console.WriteLine($"{entry.PhoneNumber} ({entry.Name}): {state}{callInfo}");
+            }
+
+            if (callManager != null)
+            {
+                var activeCallsSummary = callManager.GetActiveCallsSummary();
+                if (activeCallsSummary.Count > 0)
+                {
+                    Console.WriteLine();
+                    Console.WriteLine($"Active Calls: {activeCallsSummary.Count}");
+                    foreach (var callSummary in activeCallsSummary)
+                    {
+                        Console.WriteLine(callSummary);
+                    }
+                }
+                else
+                {
+                    Console.WriteLine();
+                    Console.WriteLine("Active Calls: 0");
+                }
             }
         }
 

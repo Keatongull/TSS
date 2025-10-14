@@ -62,7 +62,7 @@ namespace PhoneDirectory
                         return;
                     case "status":
                     case "6":
-                        UserInterface.PrintStatus(phoneSystem);
+                        UserInterface.PrintStatus(phoneSystem, commandProcessor.CallManager);
                         break;
                     case "offhook":
                     case "1":

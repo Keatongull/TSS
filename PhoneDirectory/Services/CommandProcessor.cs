@@ -8,10 +8,12 @@ namespace PhoneDirectory
     public class CommandProcessor
     {
         private readonly PhoneSystem phoneSystem;
+        private readonly CallManager callManager;
 
         public CommandProcessor(PhoneSystem phoneSystem)
         {
             this.phoneSystem = phoneSystem;
+            this.callManager = new CallManager(phoneSystem);
         }
 
         /// <summary>
@@ -56,12 +58,12 @@ namespace PhoneDirectory
                 return;
             }
             
-            phoneSystem.SetPhoneState(entry.PhoneNumber, PhoneState.ONHOOK);
-            Console.WriteLine($"{entry.Name} is now onhook.");
+            string result = callManager.HandleOnhook(entry);
+            Console.WriteLine(result);
         }
 
         /// <summary>
-        /// Handle the call command (placeholder for steps 1-3)
+        /// Handle the call command
         /// </summary>
         public void HandleCall(string identifier)
         {
@@ -71,15 +73,30 @@ namespace PhoneDirectory
                 Console.WriteLine("denial");
                 return;
             }
+
+            // Find the calling phone (phone in OFFHOOK_DIALTONE state)
+            PhoneEntry? caller = null;
+            foreach (var entry in phoneSystem.PhoneBook)
+            {
+                if (phoneSystem.GetPhoneState(entry.PhoneNumber) == PhoneState.OFFHOOK_DIALTONE)
+                {
+                    caller = entry;
+                    break;
+                }
+            }
+
+            if (caller == null)
+            {
+                Console.WriteLine("silence");
+                return;
+            }
             
-            // For steps 1-3, we just implement basic validation
-            // Commands on ONHOOK phones (other than offhook) result in "silence"
-            // This will be fully implemented in step 4 with proper call logic
-            Console.WriteLine("silence");
+            string result = callManager.InitiateCall(caller, targetEntry);
+            Console.WriteLine(result);
         }
 
         /// <summary>
-        /// Handle the transfer command (placeholder for steps 1-3)
+        /// Handle the transfer command
         /// </summary>
         public void HandleTransfer(string identifier)
         {
@@ -89,14 +106,30 @@ namespace PhoneDirectory
                 Console.WriteLine("denial");
                 return;
             }
+
+            // Find the phone trying to transfer (must be in TALKING_2WAY state)
+            PhoneEntry? initiator = null;
+            foreach (var entry in phoneSystem.PhoneBook)
+            {
+                if (phoneSystem.GetPhoneState(entry.PhoneNumber) == PhoneState.TALKING_2WAY)
+                {
+                    initiator = entry;
+                    break;
+                }
+            }
+
+            if (initiator == null)
+            {
+                Console.WriteLine("silence");
+                return;
+            }
             
-            // Commands on ONHOOK phones (other than offhook) result in "silence"
-            // This will be fully implemented in step 5 with proper transfer logic
-            Console.WriteLine("silence");
+            string result = callManager.InitiateTransfer(initiator, targetEntry);
+            Console.WriteLine(result);
         }
 
         /// <summary>
-        /// Handle the conference command (placeholder for steps 1-3)
+        /// Handle the conference command
         /// </summary>
         public void HandleConference(string identifier)
         {
@@ -106,10 +139,31 @@ namespace PhoneDirectory
                 Console.WriteLine("denial");
                 return;
             }
+
+            // Find the phone trying to conference (must be in TALKING_2WAY state)
+            PhoneEntry? initiator = null;
+            foreach (var entry in phoneSystem.PhoneBook)
+            {
+                if (phoneSystem.GetPhoneState(entry.PhoneNumber) == PhoneState.TALKING_2WAY)
+                {
+                    initiator = entry;
+                    break;
+                }
+            }
+
+            if (initiator == null)
+            {
+                Console.WriteLine("silence");
+                return;
+            }
             
-            // Commands on ONHOOK phones (other than offhook) result in "silence"
-            // This will be fully implemented in step 5 with proper conference logic
-            Console.WriteLine("silence");
+            string result = callManager.InitiateConference(initiator, targetEntry);
+            Console.WriteLine(result);
         }
+
+        /// <summary>
+        /// Get the call manager for status display purposes
+        /// </summary>
+        public CallManager CallManager => callManager;
     }
 }
