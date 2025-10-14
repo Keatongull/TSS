@@ -103,5 +103,59 @@ namespace PhoneDirectory
                 activeCalls.Remove(call);
             }
         }
+
+        public bool TryTransferCall(string transferer, string target)
+        {
+            // Allow only valid, 2-way calls
+            var call = GetCallForPhone(transferer);
+            if (call == null || call.Count != 2)
+            {
+                return false;
+            }
+
+            // Deny if the target is already in a call
+            if (IsPhoneInCall(target))
+            {
+                return false;
+            }
+                
+            // Check if target exists in phoneStates and is ONHOOK (available to receive the transfer)
+            if (!phoneStates.TryGetValue(target, out var targetState) || targetState != PhoneState.ONHOOK)
+            {
+                return false;
+            }
+
+            var other = call.First(p => p != transferer);
+
+            // Remove the transferer from the call
+            call.Remove(transferer);
+            SetPhoneState(transferer, PhoneState.ONHOOK);
+            Console.WriteLine($"{FindEntry(transferer)?.Name} hears silence.");
+
+            // Simulate ringing
+            Console.WriteLine($"{FindEntry(target)?.Name} is ringing...");
+            Console.Write("Answer call? (y/n): ");
+            string? response = Console.ReadLine()?.Trim();
+
+            // Target answers
+            if (response == "y")
+            {
+                call.Add(target);
+                foreach (var num in call)
+                    SetPhoneState(num, PhoneState.TALKING_2WAY);
+                Console.WriteLine($"{FindEntry(target)?.Name} joined the call with {FindEntry(other)?.Name}.");
+                return true;
+            }
+            //  Target declines
+            else
+            {
+                call.Add(transferer);
+                foreach (var num in call)
+                    SetPhoneState(num, PhoneState.TALKING_2WAY);
+                Console.WriteLine($"Transfer failed. Original call between {FindEntry(transferer)?.Name} and {FindEntry(other)?.Name} resumed.");
+                return false;
+            }
+
+        }
     }
 }
