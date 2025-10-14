@@ -8,6 +8,8 @@ namespace PhoneDirectory
     /// </summary>
     public class UserInterface
     {
+        private const int MaxCommandLength = 50;
+
         /// <summary>
         /// Display the help information with all available commands
         /// </summary>
@@ -68,10 +70,10 @@ namespace PhoneDirectory
             if (input == null) return null;
 
             input = input.Trim();
-            if (input.Length > 50)
+            if (input.Length > MaxCommandLength)
             {
-                input = input.Substring(0, 50);
-                Console.WriteLine("Warning: command truncated to 50 characters.");
+                input = input.Substring(0, MaxCommandLength);
+                Console.WriteLine($"Warning: command truncated to {MaxCommandLength} characters.");
             }
 
             return string.IsNullOrWhiteSpace(input) ? null : input;
