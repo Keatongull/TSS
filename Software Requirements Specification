@@ -43,10 +43,10 @@ Telephone Switching Simulation (TSS)
     - [ENHANCEMENT] Commands must be entered one per line.
     - [ENHANCEMENT] Maximum command length: 50 characters.
     - [ENHANCEMENT] Available commands:
-        1. offhook
-        2. onhook
+        1. offhook <phone|name>
+        2. onhook <phone|name>
         3. call <target>
-        4. transfer <target>
+        4. transfer <initiator> <target>
         5. conference <target>
         6. status
         7. help
@@ -116,11 +116,16 @@ Telephone Switching Simulation (TSS)
         print "<Name> is already part of that call."
 
 5.2 Transfer Rules:
+    - [IMPLEMENTATION] Syntax: transfer <initiator> <target>
     - [CLARIFICATION] Only phones in 2-way calls may initiate transfer.
+    - [ENHANCEMENT] The <initiator> parameter specifies which phone is leaving the call.
     - [ENHANCEMENT] Target must be ONHOOK.
-    - Transferring phone leaves call immediately (hears “silence”).
+    - [ENHANCEMENT] The other participant in the call stays connected to the target.
+    - Transferring phone leaves call immediately (hears "silence").
     - If target does not answer, original call resumes.
     - [ENHANCEMENT] Cannot transfer to someone already in the same call.
+    - [ENHANCEMENT] Example: If Alice and Bob are talking, "transfer bob carol" 
+      results in Bob leaving and Alice talking to Carol.
 
 ===============================================================================
 6. STATUS OUTPUT
@@ -199,14 +204,20 @@ Scenario 2: Invalid Conference
     Alice & Bob talking; Alice tries to conference Carol (busy).
     Output: “Alice hears denial.”
 
-Scenario 3: Transfer With No Answer
-    Alice transfers Bob to Carol, Carol never offhooks.
-    Output: “Transfer failed – original call resumed.”
+Scenario 3: Transfer With Correct Syntax
+    Alice and Bob are talking.
+    Command: "transfer alice carol"
+    Output: "Transfer completed: Bob is now talking to Carol. Alice hears silence."
+    Result: Alice leaves the call, Bob and Carol are now connected.
+
+Scenario 3b: Transfer With No Answer (Future Enhancement)
+    Alice transfers herself out, leaving Bob to talk to Carol.
+    If Carol never answers: "Transfer failed – original call resumed."
 
 Scenario 4: Self-Call
     Alice calls Alice → “Alice hears denial.”
 
-Scenario 5: Complex Status
+Scenario 5: Complex Status (3-Way Conference)
     Output:
         System Status:
         -------------
@@ -216,3 +227,17 @@ Scenario 5: Complex Status
 
         Active Calls: 1
         - Call 1: Alice <-> Bob <-> Carol
+
+Scenario 6: Transfer Chain
+    Input sequence:
+        offhook bob
+        call alice
+        transfer bob eve
+        transfer eve dave
+    
+    Output:
+        Step 1: Bob and Alice are talking
+        Step 2: Bob transfers out, Alice and Eve are talking
+        Step 3: Eve transfers out, Alice and Dave are talking
+    
+    Final status: Alice <-> Dave (Bob and Eve both offhook with dialtone)

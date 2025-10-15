@@ -17,7 +17,7 @@ namespace PhoneDirectory
             Console.WriteLine("1. offhook <phone|name>");
             Console.WriteLine("2. onhook <phone|name>");
             Console.WriteLine("3. call <target>");
-            Console.WriteLine("4. transfer <target>");
+            Console.WriteLine("4. transfer <initiator> <target>");
             Console.WriteLine("5. conference <target>");
             Console.WriteLine("6. status");
             Console.WriteLine("7. help");

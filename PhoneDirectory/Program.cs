@@ -93,12 +93,7 @@ namespace PhoneDirectory
                         break;
                     case "transfer":
                     case "4":
-                        if (parts.Length != 2)
-                        {
-                            Console.WriteLine("Invalid command syntax.");
-                            break;
-                        }
-                        commandProcessor.HandleTransfer(parts[1]);
+                        commandProcessor.HandleTransfer(parts);
                         break;
                     case "conference":
                     case "5":

@@ -97,34 +97,39 @@ namespace PhoneDirectory
 
         /// <summary>
         /// Handle the transfer command
+        /// Format: transfer <initiator> <target>
         /// </summary>
-        public void HandleTransfer(string identifier)
+        public void HandleTransfer(string[] parts)
         {
-            var targetEntry = phoneSystem.FindEntry(identifier);
+            // Check if we have both initiator and target
+            if (parts.Length != 3)
+            {
+                Console.WriteLine("Invalid command syntax. Use: transfer <initiator> <target>");
+                return;
+            }
+
+            var initiatorEntry = phoneSystem.FindEntry(parts[1]);
+            if (initiatorEntry == null)
+            {
+                Console.WriteLine("denial");
+                return;
+            }
+
+            var targetEntry = phoneSystem.FindEntry(parts[2]);
             if (targetEntry == null)
             {
                 Console.WriteLine("denial");
                 return;
             }
 
-            // Find the phone trying to transfer (must be in TALKING_2WAY state)
-            PhoneEntry? initiator = null;
-            foreach (var entry in phoneSystem.PhoneBook)
-            {
-                if (phoneSystem.GetPhoneState(entry.PhoneNumber) == PhoneState.TALKING_2WAY)
-                {
-                    initiator = entry;
-                    break;
-                }
-            }
-
-            if (initiator == null)
+            // Check initiator is in TALKING_2WAY state
+            if (phoneSystem.GetPhoneState(initiatorEntry.PhoneNumber) != PhoneState.TALKING_2WAY)
             {
                 Console.WriteLine("silence");
                 return;
             }
             
-            string result = callManager.InitiateTransfer(initiator, targetEntry);
+            string result = callManager.InitiateTransfer(initiatorEntry, targetEntry);
             Console.WriteLine(result);
         }
 
