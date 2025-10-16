@@ -123,7 +123,7 @@ namespace PhoneDirectory
             }
 
             // Prompt for transferer
-            Console.Write("Who is tranferring the call? ");
+            Console.Write("Who is transferring the call? ");
             string? transfererInput = Console.ReadLine()?.Trim();
             if (string.IsNullOrWhiteSpace(transfererInput))
             {
@@ -243,7 +243,13 @@ namespace PhoneDirectory
             }
 
             // Try adding them to the selected call
-            if (phoneSystem.TryAddToCall(requester!.PhoneNumber, newParticipant.PhoneNumber))
+            if (requester == null)
+            {
+                Console.WriteLine("denial");
+                return;
+            }
+
+            if (phoneSystem.TryAddToCall(requester.PhoneNumber, newParticipant.PhoneNumber))
             {
                 Console.WriteLine($"{newParticipant.Name} joined the conference.");
             }
