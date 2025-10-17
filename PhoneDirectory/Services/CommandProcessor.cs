@@ -123,7 +123,7 @@ namespace PhoneDirectory
             }
 
             // Prompt for transferer
-            Console.Write("Who is tranferring the call? ");
+            Console.Write("Who is transferring the call? ");
             string? transfererInput = Console.ReadLine()?.Trim();
             if (string.IsNullOrWhiteSpace(transfererInput))
             {
@@ -171,11 +171,9 @@ namespace PhoneDirectory
 
         public void HandleConference(string identifier)
         {
-            // Find who’s requesting conference
-            var requester = phoneSystem.PhoneBook.FirstOrDefault(p =>
-                phoneSystem.IsPhoneInCall(p.PhoneNumber));
+            var twoWayCalls = phoneSystem.GetTwoWayCalls();
 
-            if (requester == null)
+            if (twoWayCalls.Count == 0)
             {
                 Console.WriteLine("silence");
                 return;
@@ -188,13 +186,6 @@ namespace PhoneDirectory
                 return;
             }
 
-            // Self-conference
-            if (requester.PhoneNumber == newParticipant.PhoneNumber)
-            {
-                Console.WriteLine("denial");
-                return;
-            }
-
             // If new participant is already in another call
             if (phoneSystem.IsPhoneInCall(newParticipant.PhoneNumber))
             {
@@ -202,14 +193,62 @@ namespace PhoneDirectory
                 return;
             }
 
-            // If new participant is ONHOOK → can’t join
+            // If new participant is ONHOOK → can't join
             if (phoneSystem.GetPhoneState(newParticipant.PhoneNumber) == PhoneState.ONHOOK)
             {
                 Console.WriteLine("silence");
                 return;
             }
 
-            // Try adding them to existing call
+            HashSet<string> selectedCall;
+            PhoneEntry? requester = null;
+
+            if (twoWayCalls.Count == 1)
+            {
+                // Single call - use existing logic
+                selectedCall = twoWayCalls[0];
+                requester = phoneSystem.FindEntry(selectedCall.First());
+            }
+            else
+            {
+                // Multiple calls - show menu and let user choose
+                Console.WriteLine("Multiple active calls found:");
+                for (int i = 0; i < twoWayCalls.Count; i++)
+                {
+                    var call = twoWayCalls[i];
+                    var participants = call.Select(num => phoneSystem.FindEntry(num)?.Name ?? num).ToList();
+                    Console.WriteLine($"{i + 1}. {participants[0]} <-> {participants[1]}");
+                }
+
+                Console.Write($"Which call should {newParticipant.Name} join? (1-{twoWayCalls.Count}): ");
+                string? response = Console.ReadLine()?.Trim();
+
+                if (int.TryParse(response, out int choice) && choice >= 1 && choice <= twoWayCalls.Count)
+                {
+                    selectedCall = twoWayCalls[choice - 1];
+                    requester = phoneSystem.FindEntry(selectedCall.First());
+                }
+                else
+                {
+                    Console.WriteLine("Invalid selection.");
+                    return;
+                }
+            }
+
+            // Check for self-conference
+            if (selectedCall.Contains(newParticipant.PhoneNumber))
+            {
+                Console.WriteLine($"{newParticipant.Name} is already part of that call.");
+                return;
+            }
+
+            // Try adding them to the selected call
+            if (requester == null)
+            {
+                Console.WriteLine("denial");
+                return;
+            }
+
             if (phoneSystem.TryAddToCall(requester.PhoneNumber, newParticipant.PhoneNumber))
             {
                 Console.WriteLine($"{newParticipant.Name} joined the conference.");

@@ -56,6 +56,11 @@ namespace PhoneDirectory
         public HashSet<string>? GetCallForPhone(string phoneNumber) =>
             activeCalls.FirstOrDefault(c => c.Contains(phoneNumber));
 
+        public List<HashSet<string>> GetTwoWayCalls()
+        {
+            return activeCalls.Where(call => call.Count == 2).ToList();
+        }
+
         public void StartCall(string phone1, string phone2)
         {
             var call = new HashSet<string> { phone1, phone2 };
