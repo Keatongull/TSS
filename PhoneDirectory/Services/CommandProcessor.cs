@@ -62,18 +62,27 @@ namespace PhoneDirectory
 
         public void HandleCall(string identifier)
         {
-            // Find the caller (someone with OFFHOOK_DIALTONE)
-            var caller = phoneSystem.PhoneBook.FirstOrDefault(p =>
-                phoneSystem.GetPhoneState(p.PhoneNumber) == PhoneState.OFFHOOK_DIALTONE);
-
-            if (caller == null)
+            // Ensure that the target exists
+            var target = phoneSystem.FindEntry(identifier);
+            if (target == null)
             {
-                Console.WriteLine("silence");
+                Console.WriteLine("denial");
                 return;
             }
 
-            var target = phoneSystem.FindEntry(identifier);
-            if (target == null)
+            Console.WriteLine("Who is making the call?: ");
+            string? callerInput = Console.ReadLine()?.Trim();
+
+            // Ensure caller is not null or emtpy
+            if (string.IsNullOrWhiteSpace(callerInput))
+            {
+                Console.WriteLine("denial, empty");
+                return;
+            }
+
+            // Ensure that the caller exists
+            var caller = phoneSystem.FindEntry(callerInput);
+            if (caller == null)
             {
                 Console.WriteLine("denial");
                 return;
@@ -102,6 +111,13 @@ namespace PhoneDirectory
 
             // Target ONHOOK?
             if (phoneSystem.GetPhoneState(target.PhoneNumber) == PhoneState.ONHOOK)
+            {
+                Console.WriteLine("silence");
+                return;
+            }
+
+            // Caller ONHOOK?
+            if (phoneSystem.GetPhoneState(caller.PhoneNumber) == PhoneState.ONHOOK)
             {
                 Console.WriteLine("silence");
                 return;
