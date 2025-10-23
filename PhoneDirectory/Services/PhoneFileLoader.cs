@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace PhoneDirectory
 {
-    class PhoneFileLoader
+    public class PhoneFileLoader
     {
         private HashSet<string> usedPhoneNumbers;
         private HashSet<string> usedNames;
@@ -16,7 +16,7 @@ namespace PhoneDirectory
             usedNames = new HashSet<string>();
         }
 
-        public List<PhoneEntry>? LoadPhoneEntries(string fileName, int maxEntries)
+    public List<PhoneEntry>? LoadPhoneEntries(string fileName, int maxEntries)
         {
             // Check if file exists
             if (!File.Exists(fileName))

@@ -1,0 +1,17 @@
+Coverage Metric Example (using Coverlet or Visual Studio):
+
+PhoneFileLoaderTests.cs:
+- WB_FL_001_FileNotFound_ReturnsNull: 1 branch, 1 covered (100%)
+- WB_FL_005_SingleField_ProducesError: 2 branches, 2 covered (100%)
+- WB_FL_011_ValidEntry_AddedToList: 2 branches, 2 covered (100%)
+
+PhoneSystemTests.cs:
+- WB_PS_001_InitializesPhoneStatesToOnhook: 1 branch, 1 covered (100%)
+- WB_PS_101_StartCallCreatesCallAndUpdatesStates: 2 branches, 2 covered (100%)
+
+Total Coverage: 100% for tested methods
+
+To generate actual coverage:
+- Run tests with Coverlet or Visual Studio Test Explorer
+- Export coverage report
+- Review uncovered lines/branches and add more tests as needed

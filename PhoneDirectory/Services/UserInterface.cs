@@ -18,7 +18,7 @@ namespace PhoneDirectory
             Console.WriteLine("1. offhook <phone|name>     - Take a phone offhook (begin dialing)");
             Console.WriteLine("2. onhook <phone|name>      - Hang up or return phone to onhook");
             Console.WriteLine("3. call <target>            - Call another phone or name");
-            Console.WriteLine("4. conference <target>      - Add another phone to a call (will prompt if multiple calls active)");
+            Console.WriteLine("4. conference <target>      - Add another phone to a call (prompts for selection if multiple calls are active)");
             Console.WriteLine("5. transfer <target>        - (future) Transfer a current call");
             Console.WriteLine("6. status                   - Show all phone states");
             Console.WriteLine("7. show calls               - Display all active calls (debugging)");
