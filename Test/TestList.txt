@@ -1,0 +1,66 @@
+
+
+PhoneFileLoaderTests.cs
+	WB_FL_001_FileNotFound_ReturnsNull - Returns null if file does not exist
+	WB_FL_005_SingleField_ProducesError - Skips line with only one field
+	WB_FL_011_ValidEntry_AddedToList - Adds valid entry to list
+	WB_FL_101_EmptyFile_ReturnsNull - Returns null for empty file
+	WB_FL_102_CommentLine_Ignored - Ignores comment lines
+	WB_FL_103_InvalidPhoneNumber_TooShort - Skips entry with short phone number
+	WB_FL_104_InvalidPhoneNumber_TooLong - Skips entry with long phone number
+	WB_FL_108_SingleField_Only_Warning - Skips line with only phone number
+	WB_FL_109_DuplicatePhoneNumber_WarningAndFirstUsed - Warns and uses first occurrence of duplicate phone number
+	WB_FL_110_DuplicateName_WarningAndFirstUsed - Warns and uses first occurrence of duplicate name (case-insensitive)
+	WB_FL_106_NameWithNumbers_Invalid - Skips entry with numbers in name
+	WB_FL_105_NonNumericPhone_Invalid - Skips entry with non-numeric phone number
+	WB_FL_111_ExceedMaxEntries_OnlyFirst20Loaded - Loads only up to max entries, warns if exceeded
+	WB_FL_101_PhoneLength_Zero_False - Phone number length 0 is invalid
+	WB_FL_102_PhoneLength_One_False - Phone number length 1 is invalid
+	WB_FL_103_PhoneLength_Four_False - Phone number length 4 is invalid
+	WB_FL_104_PhoneLength_Five_True - Phone number length 5 is valid
+	WB_FL_105_PhoneLength_Six_False - Phone number length 6 is invalid
+	WB_FL_106_NameLength_Zero_False - Name length 0 is invalid
+	WB_FL_107_NameLength_One_True - Name length 1 is valid
+	WB_FL_108_NameLength_Twelve_True - Name length 12 is valid
+	WB_FL_109_NameLength_Thirteen_False - Name length 13 is invalid
+	WB_FL_201_UsedPhoneNumbers_Populated - Used phone numbers are tracked
+	WB_FL_202_UsedNames_CaseInsensitive - Used names are tracked case-insensitively
+	WB_FL_203_HashSet_PreventsDuplicates - HashSet prevents duplicate phone numbers
+	WB_FL_204_ListOrder_Preserved - List preserves entry order
+	WB_FL_205_EmptyOrCommentLine_Skipped - Skips empty or comment lines
+	WB_FL_206_InvalidNameCharacters - Skips entry with invalid name characters
+
+
+PhoneSystemTests.cs
+	WB_PS_001_InitializesPhoneStatesToOnhook - Initializes all phones to ONHOOK state
+	WB_PS_101_StartCallCreatesCallAndUpdatesStates - Starts call and updates states to TALKING_2WAY
+	WB_PS_202_LeaveCall_2Way_RemovesCallAndUpdatesState - Leaves 2-way call, updates states
+	WB_PS_203_LeaveCall_3Way_UpdatesStates - Leaves 3-way call, updates states
+	WB_PS_107_TryAddToCall_Success - Successfully adds phone to call (3-way)
+	WB_PS_109_TryAddToCall_FailsIfCallFull - Fails to add phone if call is full
+	WB_PS_003_SetPhoneState_NotExists_DoesNothing - No-op if phone does not exist
+	WB_PS_004_GetPhoneState_NotExists_ReturnsOnhook - Returns ONHOOK for unknown phone
+	WB_PS_006_FindEntry_ByPhone_ReturnsEntry - Finds entry by phone number
+	WB_PS_007_FindEntry_ByName_ReturnsEntry - Finds entry by name
+	WB_PS_008_FindEntry_NotFound_ReturnsNull - Returns null if entry not found
+	WB_PS_106_GetCallForPhone_NotFound_ReturnsNull - Returns null if no call for phone
+
+
+UserInterfaceTests.cs
+	PrintHelp_WritesExpectedCommands - Prints all available commands
+	ShowExitMessage_DisplaysCommandCount - Displays total command count on exit
+	GetUserInput_TruncatesLongInput - Truncates input longer than 50 characters
+	GetUserInput_ReturnsNullOnWhitespace - Returns null for whitespace input
+	PrintStatus_DisplaysPhoneStatesAndCalls - Prints phone states and active calls
+	ShowActiveCalls_DisplaysActiveCalls - Displays all active calls
+	ShowActiveCalls_NoCalls - Displays message when no active calls
+
+
+CommandProcessorTests.cs
+	HandleOffhook_DenialIfEntryNotFound - Denies offhook if entry not found
+	HandleOffhook_AlreadyOffhook - Denies offhook if already offhook
+	HandleOffhook_Success - Successfully sets phone offhook
+	HandleOnhook_DenialIfEntryNotFound - Denies onhook if entry not found
+	HandleOnhook_AlreadyOnhook - Denies onhook if already onhook
+	HandleOnhook_LeaveCall - Handles leaving a call
+	HandleOnhook_Success - Successfully sets phone onhook
