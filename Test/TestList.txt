@@ -1,4 +1,4 @@
-
+We executed all the tests. The one's that do not pass have to be run individually
 
 PhoneFileLoaderTests.cs
 	WB_FL_001_FileNotFound_ReturnsNull - Returns null if file does not exist
