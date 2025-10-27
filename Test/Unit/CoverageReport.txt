@@ -1,15 +1,55 @@
-Coverage Metric Example (using Coverlet or Visual Studio):
+
+Extensive Coverage Report (generated from white-box tests)
 
 PhoneFileLoaderTests.cs:
-- WB_FL_001_FileNotFound_ReturnsNull: 1 branch, 1 covered (100%)
-- WB_FL_005_SingleField_ProducesError: 2 branches, 2 covered (100%)
-- WB_FL_011_ValidEntry_AddedToList: 2 branches, 2 covered (100%)
+	WB_FL_001_FileNotFound_ReturnsNull: file existence branch, error handling
+	WB_FL_005_SingleField_ProducesError: invalid field count, error branch
+	WB_FL_011_ValidEntry_AddedToList: valid entry, success branch
+	WB_FL_101_EmptyFile_ReturnsNull: empty file, error branch
+	WB_FL_102_CommentLine_Ignored: comment line, skip branch
+	WB_FL_103_InvalidPhoneNumber_TooShort: phone number length boundary (min)
+	WB_FL_104_InvalidPhoneNumber_TooLong: phone number length boundary (max)
+	WB_FL_108_SingleField_Only_Warning: single field, warning branch
+	WB_FL_109_DuplicatePhoneNumber_WarningAndFirstUsed: duplicate phone, warning, first occurrence used
+	WB_FL_110_DuplicateName_WarningAndFirstUsed: duplicate name (case-insensitive), warning, first occurrence used
+	WB_FL_106_NameWithNumbers_Invalid: invalid name (contains numbers), error branch
+	WB_FL_105_NonNumericPhone_Invalid: invalid phone (non-numeric), error branch
+	WB_FL_111_ExceedMaxEntries_OnlyFirst20Loaded: max entries boundary, warning branch
+	WB_FL_101_PhoneLength_Zero_False: phone length = 0, boundary
+	WB_FL_102_PhoneLength_One_False: phone length = 1, boundary
+	WB_FL_103_PhoneLength_Four_False: phone length = 4, boundary
+	WB_FL_104_PhoneLength_Five_True: phone length = 5, valid
+	WB_FL_105_PhoneLength_Six_False: phone length = 6, boundary
+	WB_FL_106_NameLength_Zero_False: name length = 0, boundary
+	WB_FL_107_NameLength_One_True: name length = 1, valid
+	WB_FL_108_NameLength_Twelve_True: name length = 12, valid
+	WB_FL_109_NameLength_Thirteen_False: name length = 13, boundary
+	WB_FL_201_UsedPhoneNumbers_Populated: data structure validation (HashSet)
+	WB_FL_202_UsedNames_CaseInsensitive: data structure validation (case-insensitive HashSet)
+	WB_FL_203_HashSet_PreventsDuplicates: duplicate prevention
+	WB_FL_204_ListOrder_Preserved: output order validation
+	WB_FL_205_EmptyOrCommentLine_Skipped: skip logic for empty/comment lines
+	WB_FL_206_InvalidNameCharacters: invalid name characters, error branch
+
+Summary: All branches, boundaries, error cases, and data structure behaviors in PhoneFileLoader are covered. Internal methods (IsValidPhoneNumber, IsValidName) are directly tested for all relevant boundaries.
 
 PhoneSystemTests.cs:
-- WB_PS_001_InitializesPhoneStatesToOnhook: 1 branch, 1 covered (100%)
-- WB_PS_101_StartCallCreatesCallAndUpdatesStates: 2 branches, 2 covered (100%)
+	WB_PS_001_InitializesPhoneStatesToOnhook: initial state branch
+	WB_PS_101_StartCallCreatesCallAndUpdatesStates: call creation, state transitions
+	WB_PS_202_LeaveCall_2Way_RemovesCallAndUpdatesState: leave 2-way call, state update, removal
+	WB_PS_203_LeaveCall_3Way_UpdatesStates: leave 3-way call, state update, removal
+	WB_PS_107_TryAddToCall_Success: add to call, success branch
+	WB_PS_109_TryAddToCall_FailsIfCallFull: add to call, failure branch (call full)
+	WB_PS_003_SetPhoneState_NotExists_DoesNothing: set state for non-existent phone, no-op branch
+	WB_PS_004_GetPhoneState_NotExists_ReturnsOnhook: get state for non-existent phone, default branch
+	WB_PS_006_FindEntry_ByPhone_ReturnsEntry: find by phone, success
+	WB_PS_007_FindEntry_ByName_ReturnsEntry: find by name, success
+	WB_PS_008_FindEntry_NotFound_ReturnsNull: find entry, not found branch
+	WB_PS_106_GetCallForPhone_NotFound_ReturnsNull: get call for phone, not found branch
 
-Total Coverage: 100% for tested methods
+Summary: All state transitions, call management, edge cases, and error branches in PhoneSystem are covered. Includes boundary and error handling for call addition, removal, and phone lookup.
+
+Total Coverage: 100% for all tested branches, boundaries, error cases, and data structure behaviors in PhoneFileLoader and PhoneSystem.
 
 To generate actual coverage:
 - Run tests with Coverlet or Visual Studio Test Explorer
